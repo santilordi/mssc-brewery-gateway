@@ -22,8 +22,14 @@ public class LocalHostRouteConfig {
                         .uri("http://localhost:8081")
                         .id("order-service"))
                 .route(r -> r.path("/api/v1/beer/*/inventory")
+                        .filters(f -> f.circuitBreaker(c-> c.setName("inventoryCB")
+                                .setFallbackUri("forward:/inventory-failover")
+                                .setRouteId("inv-failover")))
                         .uri("http://localhost:8082")
                         .id("inventory-service"))
+                .route(r -> r.path("/inventory-failover/**")
+                        .uri("lb://inventory-failover")
+                        .id("inventory-failover-service"))
                 .build();
     }
 }
